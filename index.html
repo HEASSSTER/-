@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f5f2fb">
+<meta name="apple-mobile-web-app-title" content="Погода">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Погода</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,300;8..144,400;8..144,500;8..144,600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --h:255;
+  color-scheme:light;
+  --primary:hsl(var(--h) 45% 40%);
+  --on-primary:#fff;
+  --primary-c:hsl(var(--h) 85% 90%);
+  --on-primary-c:hsl(var(--h) 60% 14%);
+  --secondary-c:hsl(calc(var(--h) + 20) 38% 89%);
+  --surface:hsl(var(--h) 35% 97%);
+  --surf-c:hsl(var(--h) 30% 93%);
+  --surf-high:hsl(var(--h) 26% 89%);
+  --on-surface:hsl(var(--h) 15% 12%);
+  --on-var:hsl(var(--h) 10% 36%);
+  --outline:hsl(var(--h) 12% 75%);
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --primary:hsl(var(--h) 85% 80%);
+    --on-primary:hsl(var(--h) 60% 18%);
+    --primary-c:hsl(var(--h) 38% 28%);
+    --on-primary-c:hsl(var(--h) 80% 91%);
+    --secondary-c:hsl(calc(var(--h) + 20) 20% 27%);
+    --surface:hsl(var(--h) 16% 9%);
+    --surf-c:hsl(var(--h) 13% 14%);
+    --surf-high:hsl(var(--h) 12% 19%);
+    --on-surface:hsl(var(--h) 15% 91%);
+    --on-var:hsl(var(--h) 10% 72%);
+    --outline:hsl(var(--h) 8% 38%);
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --primary:hsl(var(--h) 85% 80%);
+  --on-primary:hsl(var(--h) 60% 18%);
+  --primary-c:hsl(var(--h) 38% 28%);
+  --on-primary-c:hsl(var(--h) 80% 91%);
+  --secondary-c:hsl(calc(var(--h) + 20) 20% 27%);
+  --surface:hsl(var(--h) 16% 9%);
+  --surf-c:hsl(var(--h) 13% 14%);
+  --surf-high:hsl(var(--h) 12% 19%);
+  --on-surface:hsl(var(--h) 15% 91%);
+  --on-var:hsl(var(--h) 10% 72%);
+  --outline:hsl(var(--h) 8% 38%);
+}
+*{box-sizing:border-box;margin:0}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{
+  background:var(--surface);color:var(--on-surface);
+  font-family:"Roboto Flex",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  font-size:16px;line-height:1.4;
+  transition:background .4s,color .4s;
+}
+main{max-width:520px;margin:0 auto;padding:20px 16px 40px;display:flex;flex-direction:column;gap:12px}
+header{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:0 4px}
+h1{font-size:22px;font-weight:500}
+.date{font-size:14px;color:var(--on-var)}
+.date::first-letter{text-transform:uppercase}
+.status{font-size:12px;font-weight:500;padding:6px 12px;border-radius:999px;background:var(--surf-high);color:var(--on-var);white-space:nowrap}
+.status.live{background:var(--secondary-c);color:var(--on-surface)}
+
+.chips{display:flex;gap:8px;overflow-x:auto;padding:2px 4px 6px;margin:0 -4px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{
+  flex:none;border:1px solid var(--outline);background:transparent;color:var(--on-surface);
+  font:inherit;font-size:14px;font-weight:500;height:36px;padding:0 16px;border-radius:10px;cursor:pointer;
+  transition:background .2s,border-color .2s;
+}
+.chip[aria-pressed="true"]{background:var(--secondary-c);border-color:transparent}
+.chip[aria-pressed="true"]::before{content:"✓ "}
+button:focus-visible{outline:3px solid var(--primary);outline-offset:2px}
+
+.hero{
+  background:var(--primary-c);color:var(--on-primary-c);
+  border-radius:36px 36px 36px 12px;padding:28px 24px 24px;
+  display:grid;grid-template-columns:1fr auto;align-items:center;gap:4px 12px;
+  transition:background .4s,color .4s;
+}
+.temp{font-size:96px;font-weight:300;line-height:1;letter-spacing:-3px;font-variation-settings:"opsz" 144}
+.temp sup{font-size:40px;font-weight:300;letter-spacing:0;vertical-align:top;position:relative;top:8px}
+.icon{font-size:80px;line-height:1;grid-row:span 2;text-align:center}
+.cond{font-size:20px;font-weight:500}
+.feels{grid-column:1/-1;margin-top:10px;font-size:14px;opacity:.8}
+
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.stat{background:var(--surf-c);border-radius:24px;padding:16px 18px;transition:background .4s}
+.stat span{display:block;font-size:13px;color:var(--on-var)}
+.stat b{display:block;font-size:26px;font-weight:400;margin-top:2px}
+.stat small{font-size:14px;color:var(--on-var);font-weight:400}
+
+.card{background:var(--surf-c);border-radius:28px;padding:18px 0 14px;transition:background .4s}
+.card h2{font-size:14px;font-weight:500;color:var(--on-var);padding:0 20px 12px}
+.hours{display:flex;gap:8px;overflow-x:auto;padding:0 16px 4px;scrollbar-width:none}
+.hours::-webkit-scrollbar{display:none}
+.hour{flex:none;width:62px;background:var(--surf-high);border-radius:999px;padding:12px 0;text-align:center;display:flex;flex-direction:column;gap:6px;align-items:center}
+.hour:first-child{background:var(--primary);color:var(--on-primary)}
+.hour i{font-style:normal;font-size:24px;line-height:1}
+.hour span{font-size:12px}
+.hour b{font-size:16px;font-weight:500}
+
+.days{list-style:none;padding:0 20px}
+.day{display:grid;grid-template-columns:76px 28px 34px 1fr 34px;align-items:center;gap:8px;padding:10px 0;font-size:15px}
+.day + .day{border-top:1px solid var(--surf-high)}
+.day i{font-style:normal;font-size:22px;text-align:center}
+.day .lo{color:var(--on-var);text-align:right}
+.day .hi{text-align:right;font-weight:500}
+.bar{height:8px;border-radius:999px;background:var(--surf-high);position:relative}
+.bar em{position:absolute;top:0;bottom:0;border-radius:999px;background:var(--primary)}
+
+.theme{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 20px}
+.theme h2{padding:0}
+.swatches{display:flex;gap:10px}
+.sw{width:34px;height:34px;border-radius:50%;border:0;cursor:pointer;background:hsl(var(--c) 55% 55%);display:grid;place-items:center;color:#fff;font-size:16px}
+.sw[aria-pressed="true"]{outline:3px solid var(--on-surface);outline-offset:2px}
+.sw[aria-pressed="true"]::after{content:"✓"}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div>
+      <h1 id="city">Москва</h1>
+      <div class="date" id="date"></div>
+    </div>
+    <span class="status" id="status">Демо-данные</span>
+  </header>
+  <nav class="chips" id="chips" aria-label="Город"></nav>
+  <section class="hero" aria-live="polite">
+    <div class="temp" id="temp"></div>
+    <div class="icon" id="icon"></div>
+    <div class="cond" id="cond"></div>
+    <div class="feels" id="feels"></div>
+  </section>
+  <section class="grid" id="stats"></section>
+  <section class="card"><h2>Почасовой прогноз</h2><div class="hours" id="hours"></div></section>
+  <section class="card"><h2>Прогноз на 5 дней</h2><ul class="days" id="days"></ul></section>
+  <section class="card"><div class="theme"><h2>Цвет темы</h2><div class="swatches" id="sw"></div></div></section>
+</main>
+<script>
+var CITIES=[
+  {n:"Москва",lat:55.75,lon:37.62,b:1},
+  {n:"Санкт-Петербург",lat:59.94,lon:30.31,b:2},
+  {n:"Минск",lat:53.9,lon:27.57,b:2},
+  {n:"Алматы",lat:43.24,lon:76.89,b:6},
+  {n:"Ташкент",lat:41.3,lon:69.24,b:11}
+];
+var HUES=[255,160,25,205,335];
+var ci=0,hue=255,req=0;
+var $=function(id){return document.getElementById(id)};
+try{
+  var s=JSON.parse(localStorage.getItem("wx")||"{}");
+  if(s.c>=0&&s.c<CITIES.length)ci=s.c;
+  if(HUES.indexOf(s.h)>=0)hue=s.h;
+}catch(e){}
+function save(){try{localStorage.setItem("wx",JSON.stringify({c:ci,h:hue}))}catch(e){}}
+
+function wmo(c){
+  if(c===0)return["☀️","Ясно"];
+  if(c<=2)return["⛅","Переменная облачность"];
+  if(c===3)return["☁️","Пасмурно"];
+  if(c<=48)return["🌫️","Туман"];
+  if(c<=57)return["🌦️","Морось"];
+  if(c<=67)return["🌧️","Дождь"];
+  if(c<=77)return["❄️","Снег"];
+  if(c<=82)return["🌧️","Ливень"];
+  if(c<=86)return["🌨️","Снегопад"];
+  return["⛈️","Гроза"];
+}
+function dayName(d,i){return i===0?"Сегодня":d.toLocaleDateString("ru-RU",{weekday:"short"})}
+function pad(n){return String(n).padStart(2,"0")}
+
+function demo(i){
+  var c=CITIES[i],now=new Date(),h0=now.getHours(),hours=[],days=[],k;
+  var codes=[3,3,2,2,61,61,3,2,0,0,2,3];
+  for(k=0;k<24;k++){
+    var hr=(h0+k)%24;
+    hours.push({l:k===0?"Сейчас":pad(hr)+":00",t:Math.round(c.b+3*Math.sin((hr-9)/24*6.283)+Math.sin(k*1.7+i)),code:codes[(k+i*3>>1)%12]});
+  }
+  var dc=[3,61,2,0,45];
+  for(k=0;k<5;k++){
+    var mx=c.b+3+Math.round(2*Math.sin(k*1.3+i));
+    days.push({l:dayName(new Date(now.getTime()+k*864e5),k),hi:mx,lo:mx-5-k%2,code:dc[(k+i)%5]});
+  }
+  return{t:hours[0].t,feels:hours[0].t-3,code:hours[0].code,wind:3+i,hum:68+i*4,press:Math.round((1012+i*2)*0.75),uv:1,hours:hours,days:days};
+}
+function parse(j){
+  var cur=j.current,hr=j.hourly,d=j.daily,k,st=0,hours=[],days=[];
+  for(k=0;k<hr.time.length;k++){if(hr.time[k]>=cur.time.slice(0,13)+":00"){st=k;break}}
+  for(k=0;k<24&&st+k<hr.time.length;k++){
+    hours.push({l:k===0?"Сейчас":hr.time[st+k].slice(11,16),t:Math.round(hr.temperature_2m[st+k]),code:hr.weather_code[st+k]});
+  }
+  for(k=0;k<d.time.length;k++){
+    days.push({l:dayName(new Date(d.time[k]+"T12:00"),k),hi:Math.round(d.temperature_2m_max[k]),lo:Math.round(d.temperature_2m_min[k]),code:d.weather_code[k]});
+  }
+  return{t:Math.round(cur.temperature_2m),feels:Math.round(cur.apparent_temperature),code:cur.weather_code,wind:Math.round(cur.wind_speed_10m),hum:Math.round(cur.relative_humidity_2m),press:Math.round(cur.pressure_msl*0.750062),uv:Math.round(d.uv_index_max[0]),hours:hours,days:days};
+}
+function sg(n){return(n>0?"+":n<0?"−":"")+Math.abs(n)}
+
+function render(w,live){
+  var w1=wmo(w.code);
+  $("city").textContent=CITIES[ci].n;
+  $("date").textContent=new Date().toLocaleDateString("ru-RU",{weekday:"long",day:"numeric",month:"long"});
+  var st=$("status");
+  st.textContent=live?"Онлайн":"Демо-данные";
+  st.className="status"+(live?" live":"");
+  $("temp").innerHTML=sg(w.t)+"<sup>°</sup>";
+  $("icon").textContent=w1[0];
+  $("cond").textContent=w1[1];
+  $("feels").textContent="Ощущается как "+sg(w.feels)+"°";
+  $("stats").innerHTML=
+    '<div class="stat"><span>Ветер</span><b>'+w.wind+' <small>м/с</small></b></div>'+
+    '<div class="stat"><span>Влажность</span><b>'+w.hum+' <small>%</small></b></div>'+
+    '<div class="stat"><span>Давление</span><b>'+w.press+' <small>мм рт. ст.</small></b></div>'+
+    '<div class="stat"><span>УФ-индекс</span><b>'+w.uv+'</b></div>';
+  $("hours").innerHTML=w.hours.map(function(h){
+    return'<div class="hour"><span>'+h.l+'</span><i>'+wmo(h.code)[0]+'</i><b>'+sg(h.t)+'°</b></div>';
+  }).join("");
+  var gmin=Math.min.apply(null,w.days.map(function(d){return d.lo}));
+  var gmax=Math.max.apply(null,w.days.map(function(d){return d.hi}));
+  var span=Math.max(gmax-gmin,1);
+  $("days").innerHTML=w.days.map(function(d){
+    var l=(d.lo-gmin)/span*100,wd=Math.max((d.hi-d.lo)/span*100,8);
+    return'<li class="day"><span>'+d.l+'</span><i>'+wmo(d.code)[0]+'</i><span class="lo">'+sg(d.lo)+'°</span>'+
+      '<div class="bar"><em style="left:'+l+'%;width:'+wd+'%"></em></div><span class="hi">'+sg(d.hi)+'°</span></li>';
+  }).join("");
+}
+
+async function load(i){
+  var my=++req,c=CITIES[i];
+  render(demo(i),false);
+  var ctrl=new AbortController(),to=setTimeout(function(){ctrl.abort()},5000);
+  try{
+    var url="https://api.open-meteo.com/v1/forecast?latitude="+c.lat+"&longitude="+c.lon+
+      "&current=temperature_2m,apparent_temperature,relative_humidity_2m,pressure_msl,wind_speed_10m,weather_code"+
+      "&hourly=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,uv_index_max"+
+      "&wind_speed_unit=ms&timezone=auto&forecast_days=5";
+    var r=await fetch(url,{signal:ctrl.signal});
+    if(!r.ok)throw new Error("bad");
+    var j=await r.json();
+    if(my!==req)return;
+    render(parse(j),true);
+  }catch(e){}
+  clearTimeout(to);
+}
+
+function buildChips(){
+  $("chips").innerHTML="";
+  CITIES.forEach(function(c,i){
+    var b=document.createElement("button");
+    b.className="chip";b.textContent=c.n;
+    b.setAttribute("aria-pressed",i===ci);
+    b.onclick=function(){ci=i;save();buildChips();load(i)};
+    $("chips").appendChild(b);
+  });
+}
+function buildSwatches(){
+  $("sw").innerHTML="";
+  HUES.forEach(function(h){
+    var b=document.createElement("button");
+    b.className="sw";b.style.setProperty("--c",h);
+    b.setAttribute("aria-label","Цвет темы");
+    b.setAttribute("aria-pressed",h===hue);
+    b.onclick=function(){hue=h;setHue();save();buildSwatches()};
+    $("sw").appendChild(b);
+  });
+}
+function setHue(){document.documentElement.style.setProperty("--h",hue)}
+
+setHue();buildChips();buildSwatches();load(ci);
+if("serviceWorker" in navigator){navigator.serviceWorker.register("sw.js").catch(function(){})}
+</script>
+</body>
+</html>
